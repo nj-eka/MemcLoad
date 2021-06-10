@@ -3,7 +3,7 @@
 Multiprocessing implementation of loading (parsing, validating) gziped files (tracer logs of installed applications) and saving according protobuf messages into memcache servers (per dev type).
 
 ## Purpose:
-- Make research the operations of an existing single-threaded application `memc_load_orig.py` in order to improve its performance.
+- Make research the operations of an existing application `memc_load_orig.py` in order to improve its performance.
 - Implement improvements `memc_load.py` and report results.
 
 ### What we have:

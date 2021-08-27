@@ -34,9 +34,9 @@ NORMAL_ERR_RATE = 0.01
 
 AppsInstalled = cs.namedtuple("AppsInstalled", ["dev_type", "dev_id", "lat", "lon", "apps"])
 
-if 'line_profiler' not in dir() and 'profile' not in dir():
-    def profile(func):
-        return func
+# if 'line_profiler' not in dir() and 'profile' not in dir():
+#     def profile(func):
+#         return func
 
 def dot_rename(path):
     head, fn = os.path.split(path)
@@ -69,7 +69,7 @@ def pack_appsinstalled(appsinstalled):
     return b'%s:%s' % (appsinstalled.dev_type, appsinstalled.dev_id),\
            ua.SerializeToString()
 
-@profile
+#@profile
 def memc_worker(memc: memcache.Client, tasks: q.Queue, results: q.Queue, is_dry: bool = False, attempts: int = MEMCACHE_ATTEMPTS, retry_timeout: float = MEMCACHE_RETRY_TIMEOUT):
     processed = errors = 0
     cp = mp.current_process()
@@ -100,7 +100,7 @@ def memc_worker(memc: memcache.Client, tasks: q.Queue, results: q.Queue, is_dry:
         except BaseException as err:
             logging.exception('-%s:%s- Unexpected exception [%s] occurred while processing memcache on %s' % (cp.name, ct.name, err, memc.servers[0]))
 
-@profile
+#@profile
 def process_file(options: Values, args: tuple[int, str]) -> tuple[str, int, int]:
     idx, fn = args
     cp = mp.current_process()
@@ -173,11 +173,10 @@ def process_file(options: Values, args: tuple[int, str]) -> tuple[str, int, int]
             pbar.refresh()    
     return fn, processed, errors
 
-@profile
+#@profile
 def main(options: Values):
-    print(options)
-    with mp.Manager() as mpm, \
-         mp.Pool(
+    logging.info("start processing with options: %s", options)
+    with mp.Pool(
             processes=options.workers,
             initializer=tqdm.set_lock,
             initargs=(tqdm.get_lock(),)
@@ -187,9 +186,9 @@ def main(options: Values):
             logging.debug("%s: %d - ok, %d - errs", fn, processed, errors)
             err_rate = float(errors) / processed if processed else 1
             if err_rate < NORMAL_ERR_RATE:
-                logging.info("Processed (%d) records. Acceptable error rate (%s). Successfull load %s" % (processed, err_rate, fn))
+                logging.info("Processed (%d) records. Acceptable error rate (%s). Successfull load %s", processed, err_rate, fn)
             else:
-                logging.error("Processed (%d) records. High error rate (%s > %s). Failed load %s" % (processed, err_rate, NORMAL_ERR_RATE, fn))
+                logging.error("Processed (%d) records. High error rate (%s > %s). Failed load %s", processed, err_rate, NORMAL_ERR_RATE, fn)
             dot_rename(fn)
 
 def prototest():
